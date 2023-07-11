@@ -73,17 +73,22 @@ mkConstructorInfo info = do
       Nothing ->
         conE 'Haddocks.Constructor
           `appE` lift conDoc
-          -- TODO: This is wrong. Constructor arguments /can/ have docs
-          `appE` mkNP (map (const noFieldInfo) (constructorFields info))
+          `appE` mkNP (map (mkArgInfo (constructorName info)) $
+                         zipWith const [0..] (constructorFields info))
 
+-- | Field info for a named record field
 mkFieldInfo :: Name -> Q Exp
 mkFieldInfo field = do
     fieldDoc <- getDoc (DeclDoc field)
-    conE 'Haddocks.FieldInfo
+    conE 'Haddocks.Argument
       `appE` lift fieldDoc
 
-noFieldInfo :: Q Exp
-noFieldInfo = conE 'Haddocks.FieldInfo `appE` conE 'Nothing
+-- | Field info for a positional constructor argument
+mkArgInfo :: Name -> Int -> Q Exp
+mkArgInfo constr ix = do
+    fieldDoc <- getDoc (ArgDoc constr ix)
+    conE 'Haddocks.Argument
+      `appE` lift fieldDoc
 
 {-------------------------------------------------------------------------------
   Auxiliary

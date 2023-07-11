@@ -145,7 +145,7 @@ expected2 = Haddocks (Just " Example 2") $
 expected3 :: Haddocks (Code Example3)
 expected3 = Haddocks (Just " Example 3") $
        Haddocks.Constructor (Just " Example 3, newtype constructor") (
-            Haddocks.FieldInfo Nothing
+            Haddocks.Argument Nothing
          :* Nil
          )
     :* Nil
@@ -153,7 +153,7 @@ expected3 = Haddocks (Just " Example 3") $
 expected4 :: Haddocks (Code Example4)
 expected4 = Haddocks (Just " Example 4") $
        Haddocks.Constructor (Just " Example 4, newtype constructor") (
-            Haddocks.FieldInfo (Just " Example 4, newtype record field")
+            Haddocks.Argument (Just " Example 4, newtype record field")
          :* Nil
          )
     :* Nil
@@ -162,19 +162,19 @@ expected5 :: Haddocks (Code Example5)
 expected5 = Haddocks (Just " Example 5") $
        Haddocks.Constructor (Just " Example 5, constructor 1") Nil
     :* Haddocks.Constructor (Just " Example 5, constructor 2") (
-            Haddocks.FieldInfo (Just " Example 5, constructor 2, field 1")
-         :* Haddocks.FieldInfo (Just " Example 5, constructor 2, field 2")
-         :* Haddocks.FieldInfo (Just " Example 5, constructor 2, field 3")
+            Haddocks.Argument (Just " Example 5, constructor 2, field 1")
+         :* Haddocks.Argument (Just " Example 5, constructor 2, field 2")
+         :* Haddocks.Argument (Just " Example 5, constructor 2, field 3")
          :* Nil
          )
     :* Haddocks.Constructor (Just " Example 5, constructor 3") (
-            Haddocks.FieldInfo Nothing
-         :* Haddocks.FieldInfo Nothing
+            Haddocks.Argument Nothing
+         :* Haddocks.Argument Nothing
          :* Nil
          )
     :* Haddocks.Constructor (Just " Example 5, constructor 4") (
-            Haddocks.FieldInfo (Just " Example 5, constructor 4, field 1")
-         :* Haddocks.FieldInfo (Just " Example 5, constructor 4, field 2")
+            Haddocks.Argument (Just " Example 5, constructor 4, field 1")
+         :* Haddocks.Argument (Just " Example 5, constructor 4, field 2")
          :* Nil
          )
     :* Nil
@@ -183,14 +183,14 @@ expected6 :: Haddocks (Code Example6)
 expected6 = Haddocks (Just " Example 6") $
        Haddocks.Constructor (Just " Example 6, constructor 1") Nil
     :* Haddocks.Constructor (Just " Example 6, constructor 2") (
-            Haddocks.FieldInfo (Just " Example 6, constructor 2, field 1")
-         :* Haddocks.FieldInfo Nothing
-         :* Haddocks.FieldInfo (Just " Example 6, constructor 2, field 3")
+            Haddocks.Argument (Just " Example 6, constructor 2, field 1")
+         :* Haddocks.Argument Nothing
+         :* Haddocks.Argument (Just " Example 6, constructor 2, field 3")
          :* Nil
          )
     :* Haddocks.Constructor Nothing (
-            Haddocks.FieldInfo Nothing
-         :* Haddocks.FieldInfo Nothing
+            Haddocks.Argument Nothing
+         :* Haddocks.Argument Nothing
          :* Nil
          )
     :* Nil
@@ -198,13 +198,13 @@ expected6 = Haddocks (Just " Example 6") $
 expected7 :: Haddocks (Code Example7)
 expected7 = Haddocks (Just " Example 7") $
        Haddocks.Constructor (Just " Example 7, first constructor") (
-            Haddocks.FieldInfo Nothing
-         :* Haddocks.FieldInfo Nothing
+            Haddocks.Argument (Just " Example 7, first constructor, first argument")
+         :* Haddocks.Argument (Just " Example 7, first constructor, second argument")
          :* Nil
          )
     :* Haddocks.Constructor (Just " Example 7, second (infix) constructor") (
-            Haddocks.FieldInfo Nothing
-         :* Haddocks.FieldInfo Nothing
+            Haddocks.Argument (Just " Example 7, second constructor, left argument")
+         :* Haddocks.Argument (Just " Example 7, second constructor, right argument")
          :* Nil
          )
     :* Nil

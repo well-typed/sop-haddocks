@@ -10,8 +10,8 @@ module Generics.SOP.Haddocks (
     HasHaddocks(..)
     -- * Definition
   , Haddocks(..)
-  , ConstructorInfo(..)
-  , FieldInfo(..)
+  , Constructor(..)
+  , Argument(..)
   , Doc
   ) where
 
@@ -36,10 +36,10 @@ type Doc = Maybe String
 
 -- | Haddocks associated with a datatype
 data Haddocks :: [[Type]] -> Type where
-  Haddocks :: Doc -> NP ConstructorInfo xss -> Haddocks xss
+  Haddocks :: Doc -> NP Constructor xss -> Haddocks xss
 
 -- | Haddocks associated with a constructor of a datatype
-data ConstructorInfo :: [Type] -> Type where
+data Constructor :: [Type] -> Type where
   -- | Constructor
   --
   -- This could be a regular constructor, an infix constructor, or a record
@@ -48,11 +48,15 @@ data ConstructorInfo :: [Type] -> Type where
   --
   -- If you need to distinguish between these cases, you can use the regular
   -- metadata from @generics-sop@.
-  Constructor :: SListI xs => Doc -> NP FieldInfo xs -> ConstructorInfo xs
+  Constructor :: SListI xs => Doc -> NP Argument xs -> Constructor xs
 
--- | Haddocks associated with a field of a constructor
-data FieldInfo :: Type -> Type where
-  FieldInfo :: Doc -> FieldInfo x
+-- | Haddocks associated with an argument of a constructor
+--
+-- This could be a field of a record or an unnamed argument to a constructor;
+-- in both cases, documentation strings can be attached to the argument
+-- <https://haskell-haddock.readthedocs.io/en/latest/markup.html#constructors-and-record-fields>.
+data Argument :: Type -> Type where
+  Argument :: Doc -> Argument x
 
 {-------------------------------------------------------------------------------
   'Show' instances
@@ -71,7 +75,7 @@ instance Show (Haddocks xss) where
         . showSpace
         . showsPrec appPrec1 constrs
 
-instance Show (ConstructorInfo xs) where
+instance Show (Constructor xs) where
   showsPrec p (Constructor doc fields)
     | Dict <- dictShowFields fields
     = showParen (p >= appPrec1) $
@@ -81,22 +85,22 @@ instance Show (ConstructorInfo xs) where
         . showSpace
         . showsPrec appPrec1 fields
 
-deriving instance Show (FieldInfo x)
+deriving instance Show (Argument x)
 
-dictShowConstructors :: NP f xss -> Dict (All (Compose Show ConstructorInfo)) xss
+dictShowConstructors :: NP f xss -> Dict (All (Compose Show Constructor)) xss
 dictShowConstructors =
     all_NP . go
   where
     -- Explicit recursion avoids an 'SListI' constraint
-    go :: NP f xss -> NP (Dict (Compose Show ConstructorInfo)) xss
+    go :: NP f xss -> NP (Dict (Compose Show Constructor)) xss
     go Nil       = Nil
     go (_ :* xs) = Dict :* go xs
 
-dictShowFields :: NP f xs -> Dict (All (Compose Show FieldInfo)) xs
+dictShowFields :: NP f xs -> Dict (All (Compose Show Argument)) xs
 dictShowFields =
     all_NP . go
   where
-    go :: NP f xs -> NP (Dict (Compose Show FieldInfo)) xs
+    go :: NP f xs -> NP (Dict (Compose Show Argument)) xs
     go Nil       = Nil
     go (_ :* xs) = Dict :* go xs
 
@@ -109,26 +113,26 @@ instance Eq (Haddocks xss) where
     | Dict <- dictEqConstructors constrs
     = doc == doc' && constrs == constrs'
 
-instance Eq (ConstructorInfo xs) where
+instance Eq (Constructor xs) where
   Constructor doc fields == Constructor doc' fields'
     | Dict <- dictEqFields fields
     = doc == doc' && fields == fields'
 
-dictEqConstructors :: NP f xs -> Dict (All (Compose Eq ConstructorInfo)) xs
+dictEqConstructors :: NP f xs -> Dict (All (Compose Eq Constructor)) xs
 dictEqConstructors =
     all_NP . go
   where
-    go :: NP f xs -> NP (Dict (Compose Eq ConstructorInfo)) xs
+    go :: NP f xs -> NP (Dict (Compose Eq Constructor)) xs
     go Nil       = Nil
     go (_ :* xs) = Dict :* go xs
 
-dictEqFields :: NP f xs -> Dict (All (Compose Eq FieldInfo)) xs
+dictEqFields :: NP f xs -> Dict (All (Compose Eq Argument)) xs
 dictEqFields =
     all_NP . go
   where
-    go :: NP f xs -> NP (Dict (Compose Eq FieldInfo)) xs
+    go :: NP f xs -> NP (Dict (Compose Eq Argument)) xs
     go Nil       = Nil
     go (_ :* xs) = Dict :* go xs
 
-deriving instance Eq (FieldInfo x)
+deriving instance Eq (Argument x)
 
