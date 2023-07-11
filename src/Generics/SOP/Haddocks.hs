@@ -6,13 +6,16 @@
 -- > import Generics.SOP.Haddocks qualified as Haddocks
 -- > import Generics.SOP.Haddocks (HasHaddocks(..), Haddocks)
 module Generics.SOP.Haddocks (
+    -- * Class
+    HasHaddocks(..)
     -- * Definition
-    Haddocks(..)
+  , Haddocks(..)
   , ConstructorInfo(..)
   , FieldInfo(..)
   , Doc
-    -- * Class
-  , HasHaddocks(..)
+    -- * Queries
+  , HasDoc(..)
+  , constructors
   ) where
 
 import GHC.Show
@@ -20,6 +23,13 @@ import Generics.SOP (Generic, Code)
 import Data.SOP
 import Data.Kind
 import Data.SOP.Dict
+
+{-------------------------------------------------------------------------------
+  Class
+-------------------------------------------------------------------------------}
+
+class Generic a => HasHaddocks a where
+  getHaddocks :: proxy a -> Haddocks (Code a)
 
 {-------------------------------------------------------------------------------
   Definition
@@ -50,6 +60,28 @@ data ConstructorInfo :: [Type] -> Type where
 
 data FieldInfo :: Type -> Type where
   FieldInfo :: Doc -> FieldInfo x
+
+{-------------------------------------------------------------------------------
+  Queries
+-------------------------------------------------------------------------------}
+
+class HasDoc a where
+  getDoc :: a -> Doc
+
+instance HasDoc (Haddocks xss) where
+  getDoc (ADT     doc _) = doc
+  getDoc (Newtype doc _) = doc
+
+instance HasDoc (ConstructorInfo xs) where
+  getDoc (Constructor doc        ) = doc
+  getDoc (Record      doc _fields) = doc
+
+instance HasDoc (FieldInfo x) where
+  getDoc (FieldInfo doc) = doc
+
+constructors :: Haddocks xss -> NP ConstructorInfo xss
+constructors (ADT     _ constrs) = constrs
+constructors (Newtype _ constr ) = constr :* Nil
 
 {-------------------------------------------------------------------------------
   'Show' instances
@@ -147,12 +179,4 @@ dictEqFields =
     go (_ :* xs) = Dict :* go xs
 
 deriving instance Eq (FieldInfo x)
-
-{-------------------------------------------------------------------------------
-  Class
--------------------------------------------------------------------------------}
-
-class Generic a => HasHaddocks a where
-  haddocks :: proxy a -> Haddocks (Code a)
-
 

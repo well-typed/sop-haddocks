@@ -42,7 +42,7 @@ deriveHasHaddocks n = do
       instanceD
         (cxt [])
         (conT ''HasHaddocks `appT` conT (datatypeName info))
-        [ funD 'haddocks [
+        [ funD 'getHaddocks [
               clause
                 [wildP]
                 (normalB (mkHaddocks info))

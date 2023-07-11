@@ -107,7 +107,7 @@ tests = testGroup "Test.Sanity.TH" [
     ]
   where
     test :: HasHaddocks a => Proxy a -> Haddocks (Code a) -> Assertion
-    test p expected = assertEqual "" expected $ haddocks p
+    test p expected = assertEqual "" expected $ getHaddocks p
 
 {-------------------------------------------------------------------------------
   Expected haddocks
