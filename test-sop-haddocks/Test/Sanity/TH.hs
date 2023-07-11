@@ -11,7 +11,7 @@ import Data.SOP
 
 import Generics.SOP.Haddocks.TH
 import Generics.SOP.Haddocks qualified as Haddocks
-import Generics.SOP.Haddocks (HasHaddocks(..), Haddocks)
+import Generics.SOP.Haddocks (HasHaddocks(..), Haddocks(..))
 
 {-------------------------------------------------------------------------------
   Example 1
@@ -70,18 +70,30 @@ data Example5 =
 
 -- | Example 6
 data Example6 =
-    -- | Example 5, constructor 1
+    -- | Example 6, constructor 1
     E6_Constr1
 
-    -- | Example 5, constructor 2
+    -- | Example 6, constructor 2
   | E6_Constr2 {
-        e6_c2_field1 :: Int   -- ^ Example 5, constructor 2, field 1
-      , e6_c2_field2 :: Char  --   Example 5, constructor 2, field 2 (NOT HADDOCK)
-      , e6_c2_field3 :: Bool  -- ^ Example 5, constructor 2, field 3
+        e6_c2_field1 :: Int   -- ^ Example 6, constructor 2, field 1
+      , e6_c2_field2 :: Char  --   Example 6, constructor 2, field 2 (NOT HADDOCK)
+      , e6_c2_field3 :: Bool  -- ^ Example 6, constructor 2, field 3
       }
 
-    --   Example 5, constructor 3 (NOT HADDOCK)
+    --   Example 6, constructor 3 (NOT HADDOCK)
   | E6_Constr3 Int Bool
+  deriving stock (GHC.Generic)
+  deriving anyclass (SOP.Generic, SOP.HasDatatypeInfo)
+
+-- | Example 7
+data Example7 =
+    E7_Constr1   -- ^ Example 7, first constructor
+      Int        -- ^ Example 7, first constructor, first argument
+      Bool       -- ^ Example 7, first constructor, second argument
+
+  | (:**)        -- ^ Example 7, second (infix) constructor
+      Char       -- ^ Example 7, second constructor, left argument
+      Int        -- ^ Example 7, second constructor, right argument
   deriving stock (GHC.Generic)
   deriving anyclass (SOP.Generic, SOP.HasDatatypeInfo)
 
@@ -91,6 +103,7 @@ deriveHasHaddocks ''Example3   -- Newtype
 deriveHasHaddocks ''Example4   -- Newtype record
 deriveHasHaddocks ''Example5   -- Regular record
 deriveHasHaddocks ''Example6   -- Some haddocks missing
+deriveHasHaddocks ''Example7   -- Haddocks for constructor arguments
 
 {-------------------------------------------------------------------------------
   Top-level
@@ -103,7 +116,8 @@ tests = testGroup "Test.Sanity.TH" [
     , testCase "example3" $ test (Proxy @Example3) expected3
     , testCase "example4" $ test (Proxy @Example4) expected4
     , testCase "example5" $ test (Proxy @Example5) expected5
-    , testCase "example5" $ test (Proxy @Example6) expected6
+    , testCase "example6" $ test (Proxy @Example6) expected6
+    , testCase "example7" $ test (Proxy @Example7) expected7
     ]
   where
     test :: HasHaddocks a => Proxy a -> Haddocks (Code a) -> Assertion
@@ -118,37 +132,47 @@ tests = testGroup "Test.Sanity.TH" [
 -------------------------------------------------------------------------------}
 
 expected1 :: Haddocks (Code Example1)
-expected1 = Haddocks.ADT (Just " Example 1") $
-       Haddocks.Constructor (Just " Example 1, constructor 1")
-    :* Haddocks.Constructor (Just " Example 1, constructor 2")
+expected1 = Haddocks (Just " Example 1") $
+       Haddocks.Constructor (Just " Example 1, constructor 1") Nil
+    :* Haddocks.Constructor (Just " Example 1, constructor 2") Nil
     :* Nil
 
 expected2 :: Haddocks (Code Example2)
-expected2 = Haddocks.ADT (Just " Example 2") $
-       Haddocks.Constructor (Just " Example 2, only constructor")
+expected2 = Haddocks (Just " Example 2") $
+       Haddocks.Constructor (Just " Example 2, only constructor") Nil
     :* Nil
 
 expected3 :: Haddocks (Code Example3)
-expected3 = Haddocks.Newtype (Just " Example 3") $
-       Haddocks.Constructor (Just " Example 3, newtype constructor")
+expected3 = Haddocks (Just " Example 3") $
+       Haddocks.Constructor (Just " Example 3, newtype constructor") (
+            Haddocks.FieldInfo Nothing
+         :* Nil
+         )
+    :* Nil
 
 expected4 :: Haddocks (Code Example4)
-expected4 = Haddocks.Newtype (Just " Example 4") $
-     Haddocks.Record (Just " Example 4, newtype constructor") $
-          Haddocks.FieldInfo (Just " Example 4, newtype record field")
-       :* Nil
+expected4 = Haddocks (Just " Example 4") $
+       Haddocks.Constructor (Just " Example 4, newtype constructor") (
+            Haddocks.FieldInfo (Just " Example 4, newtype record field")
+         :* Nil
+         )
+    :* Nil
 
 expected5 :: Haddocks (Code Example5)
-expected5 = Haddocks.ADT (Just " Example 5") $
-       Haddocks.Constructor (Just " Example 5, constructor 1")
-    :* Haddocks.Record (Just " Example 5, constructor 2") (
+expected5 = Haddocks (Just " Example 5") $
+       Haddocks.Constructor (Just " Example 5, constructor 1") Nil
+    :* Haddocks.Constructor (Just " Example 5, constructor 2") (
             Haddocks.FieldInfo (Just " Example 5, constructor 2, field 1")
          :* Haddocks.FieldInfo (Just " Example 5, constructor 2, field 2")
          :* Haddocks.FieldInfo (Just " Example 5, constructor 2, field 3")
          :* Nil
          )
-    :* Haddocks.Constructor (Just " Example 5, constructor 3")
-    :* Haddocks.Record (Just " Example 5, constructor 4") (
+    :* Haddocks.Constructor (Just " Example 5, constructor 3") (
+            Haddocks.FieldInfo Nothing
+         :* Haddocks.FieldInfo Nothing
+         :* Nil
+         )
+    :* Haddocks.Constructor (Just " Example 5, constructor 4") (
             Haddocks.FieldInfo (Just " Example 5, constructor 4, field 1")
          :* Haddocks.FieldInfo (Just " Example 5, constructor 4, field 2")
          :* Nil
@@ -156,13 +180,31 @@ expected5 = Haddocks.ADT (Just " Example 5") $
     :* Nil
 
 expected6 :: Haddocks (Code Example6)
-expected6 = Haddocks.ADT (Just " Example 6") $
-       Haddocks.Constructor (Just " Example 5, constructor 1")
-    :* Haddocks.Record (Just " Example 5, constructor 2") (
-            Haddocks.FieldInfo (Just " Example 5, constructor 2, field 1")
+expected6 = Haddocks (Just " Example 6") $
+       Haddocks.Constructor (Just " Example 6, constructor 1") Nil
+    :* Haddocks.Constructor (Just " Example 6, constructor 2") (
+            Haddocks.FieldInfo (Just " Example 6, constructor 2, field 1")
          :* Haddocks.FieldInfo Nothing
-         :* Haddocks.FieldInfo (Just " Example 5, constructor 2, field 3")
+         :* Haddocks.FieldInfo (Just " Example 6, constructor 2, field 3")
          :* Nil
          )
-    :* Haddocks.Constructor Nothing
+    :* Haddocks.Constructor Nothing (
+            Haddocks.FieldInfo Nothing
+         :* Haddocks.FieldInfo Nothing
+         :* Nil
+         )
+    :* Nil
+
+expected7 :: Haddocks (Code Example7)
+expected7 = Haddocks (Just " Example 7") $
+       Haddocks.Constructor (Just " Example 7, first constructor") (
+            Haddocks.FieldInfo Nothing
+         :* Haddocks.FieldInfo Nothing
+         :* Nil
+         )
+    :* Haddocks.Constructor (Just " Example 7, second (infix) constructor") (
+            Haddocks.FieldInfo Nothing
+         :* Haddocks.FieldInfo Nothing
+         :* Nil
+         )
     :* Nil

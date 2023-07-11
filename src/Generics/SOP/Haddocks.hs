@@ -4,7 +4,7 @@
 --
 -- > import Generics.SOP.Haddocks.TH
 -- > import Generics.SOP.Haddocks qualified as Haddocks
--- > import Generics.SOP.Haddocks (HasHaddocks(..), Haddocks)
+-- > import Generics.SOP.Haddocks (HasHaddocks(..), Haddocks(..))
 module Generics.SOP.Haddocks (
     -- * Class
     HasHaddocks(..)
@@ -13,9 +13,6 @@ module Generics.SOP.Haddocks (
   , ConstructorInfo(..)
   , FieldInfo(..)
   , Doc
-    -- * Queries
-  , HasDoc(..)
-  , constructors
   ) where
 
 import GHC.Show
@@ -39,49 +36,23 @@ type Doc = Maybe String
 
 -- | Haddocks associated with a datatype
 data Haddocks :: [[Type]] -> Type where
-  -- | Standard algebraic datatype
-  ADT ::
-       Doc
-    -> NP ConstructorInfo xss
-    -> Haddocks xss
+  Haddocks :: Doc -> NP ConstructorInfo xss -> Haddocks xss
 
-  -- | Newtype
-  Newtype ::
-       Doc
-    -> ConstructorInfo '[x]
-    -> Haddocks '[ '[x] ]
-
+-- | Haddocks associated with a constructor of a datatype
 data ConstructorInfo :: [Type] -> Type where
-  -- | Normal (or infix) constructor
-  Constructor :: SListI xs => Doc -> ConstructorInfo xs
+  -- | Constructor
+  --
+  -- This could be a regular constructor, an infix constructor, or a record
+  -- constructor; in all three cases haddocks can be attached to the constructor
+  -- arguments.
+  --
+  -- If you need to distinguish between these cases, you can use the regular
+  -- metadata from @generics-sop@.
+  Constructor :: SListI xs => Doc -> NP FieldInfo xs -> ConstructorInfo xs
 
-  -- | Record constructor
-  Record :: SListI xs => Doc -> NP FieldInfo xs -> ConstructorInfo xs
-
+-- | Haddocks associated with a field of a constructor
 data FieldInfo :: Type -> Type where
   FieldInfo :: Doc -> FieldInfo x
-
-{-------------------------------------------------------------------------------
-  Queries
--------------------------------------------------------------------------------}
-
-class HasDoc a where
-  getDoc :: a -> Doc
-
-instance HasDoc (Haddocks xss) where
-  getDoc (ADT     doc _) = doc
-  getDoc (Newtype doc _) = doc
-
-instance HasDoc (ConstructorInfo xs) where
-  getDoc (Constructor doc        ) = doc
-  getDoc (Record      doc _fields) = doc
-
-instance HasDoc (FieldInfo x) where
-  getDoc (FieldInfo doc) = doc
-
-constructors :: Haddocks xss -> NP ConstructorInfo xss
-constructors (ADT     _ constrs) = constrs
-constructors (Newtype _ constr ) = constr :* Nil
 
 {-------------------------------------------------------------------------------
   'Show' instances
@@ -92,30 +63,19 @@ constructors (Newtype _ constr ) = constr :* Nil
 -------------------------------------------------------------------------------}
 
 instance Show (Haddocks xss) where
-  showsPrec p (ADT doc constrs)
+  showsPrec p (Haddocks doc constrs)
     | Dict <- dictShowConstructors constrs
     = showParen (p >= appPrec1) $
-          showString "ADT "
+          showString "Haddocks "
         . showsPrec appPrec1 doc
         . showSpace
         . showsPrec appPrec1 constrs
-  showsPrec p (Newtype doc constr)
-    = showParen (p >= appPrec1) $
-          showString "Newtype "
-        . showsPrec appPrec1 doc
-        . showSpace
-        . showsPrec appPrec1 constr
 
 instance Show (ConstructorInfo xs) where
-  showsPrec p (Constructor doc)
-    = showParen (p >= appPrec1) $
-          showString "Constructor"
-        . showSpace
-        . showsPrec appPrec1 doc
-  showsPrec p (Record doc fields)
+  showsPrec p (Constructor doc fields)
     | Dict <- dictShowFields fields
     = showParen (p >= appPrec1) $
-          showString "Record"
+          showString "Constructor"
         . showSpace
         . showsPrec appPrec1 doc
         . showSpace
@@ -145,22 +105,14 @@ dictShowFields =
 -------------------------------------------------------------------------------}
 
 instance Eq (Haddocks xss) where
-  ADT doc constrs == ADT doc' constrs'
+  Haddocks doc constrs == Haddocks doc' constrs'
     | Dict <- dictEqConstructors constrs
     = doc == doc' && constrs == constrs'
-  Newtype doc constr == Newtype doc' constr'
-    = doc == doc' && constr == constr'
-  _ == _
-    = False
 
 instance Eq (ConstructorInfo xs) where
-  Constructor doc == Constructor doc'
-    = doc == doc'
-  Record doc fields == Record doc' fields'
+  Constructor doc fields == Constructor doc' fields'
     | Dict <- dictEqFields fields
     = doc == doc' && fields == fields'
-  _ == _
-    = False
 
 dictEqConstructors :: NP f xs -> Dict (All (Compose Eq ConstructorInfo)) xs
 dictEqConstructors =

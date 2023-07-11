@@ -37,8 +37,6 @@ library
   exposed-modules:
       Generics.SOP.Haddocks
       Generics.SOP.Haddocks.TH
-  other-modules:
-      Generics.SOP.Haddocks.Util
   hs-source-dirs:
       src
   build-depends:
