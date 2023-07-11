@@ -18,7 +18,7 @@ import Generics.SOP
   Definition
 -------------------------------------------------------------------------------}
 
-type Doc = String
+type Doc = Maybe String
 
 data Haddocks :: [[Type]] -> Type where
   ADT :: Doc -> Haddocks xss

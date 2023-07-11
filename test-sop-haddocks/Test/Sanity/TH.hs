@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
--- TODO: Tempoary
+-- TODO: Temporary
 {-# OPTIONS_GHC -ddump-splices #-}
 
 module Test.Sanity.TH (tests) where

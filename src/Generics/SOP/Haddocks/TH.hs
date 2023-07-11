@@ -5,15 +5,25 @@ module Generics.SOP.Haddocks.TH (
   ) where
 
 import Language.Haskell.TH
+import Language.Haskell.TH.Syntax
 
 import Generics.SOP.Haddocks
 
 deriveHasHaddocks :: Name -> Q [Dec]
-deriveHasHaddocks typ = do
-    inst <-
-      instanceD
-        (cxt [])
-        (conT ''HasHaddocks `appT` conT typ)
-        []
+deriveHasHaddocks typ = fmap (:[]) $
+    instanceD
+      (cxt [])
+      (conT ''HasHaddocks `appT` conT typ)
+      [ funD 'haddocks [
+            clause
+              [wildP]
+              (normalB (haddocksFor typ))
+              []
+          ]
+      ]
 
-    return [inst]
+haddocksFor :: Name -> Q Exp
+haddocksFor typ = do
+    typDoc <- getDoc (DeclDoc typ)
+    (conE 'ADT) `appE` (lift typDoc)
+
