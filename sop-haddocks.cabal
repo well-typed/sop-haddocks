@@ -46,6 +46,8 @@ test-suite test-sop-haddocks
       lang
   other-extensions:
       TemplateHaskell
+  ghc-options:
+      -haddock
   type:
       exitcode-stdio-1.0
   hs-source-dirs:
