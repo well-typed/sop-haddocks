@@ -69,11 +69,29 @@ data Example5 =
   deriving stock (GHC.Generic)
   deriving anyclass (SOP.Generic, SOP.HasDatatypeInfo)
 
+-- | Example 6
+data Example6 =
+    -- | Example 5, constructor 1
+    E6_Constr1
+
+    -- | Example 5, constructor 2
+  | E6_Constr2 {
+        e6_c2_field1 :: Int   -- ^ Example 5, constructor 2, field 1
+      , e6_c2_field2 :: Char  --   Example 5, constructor 2, field 2 (NOT HADDOCK)
+      , e6_c2_field3 :: Bool  -- ^ Example 5, constructor 2, field 3
+      }
+
+    --   Example 5, constructor 3 (NOT HADDOCK)
+  | E6_Constr3 Int Bool
+  deriving stock (GHC.Generic)
+  deriving anyclass (SOP.Generic, SOP.HasDatatypeInfo)
+
 deriveHasHaddocks ''Example1   -- Use the datatype name
 deriveHasHaddocks 'E2_Constr1  -- Use the constructor name
 deriveHasHaddocks ''Example3   -- Newtype
 deriveHasHaddocks ''Example4   -- Newtype record
 deriveHasHaddocks ''Example5   -- Regular record
+deriveHasHaddocks ''Example6   -- Some haddocks missing
 
 {-------------------------------------------------------------------------------
   Top-level
@@ -86,6 +104,7 @@ tests = testGroup "Test.Sanity.TH" [
     , testCase "example3" test_example3
     , testCase "example4" test_example4
     , testCase "example5" test_example5
+    , testCase "example6" test_example6
     ]
 
 test_example1 :: Assertion
@@ -107,3 +126,7 @@ test_example4 =
 test_example5 :: Assertion
 test_example5 =
     print $ haddocks (Proxy @Example5)
+
+test_example6 :: Assertion
+test_example6 =
+    print $ haddocks (Proxy @Example6)
