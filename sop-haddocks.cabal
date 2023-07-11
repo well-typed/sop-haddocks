@@ -1,0 +1,51 @@
+cabal-version:   3.0
+name:            sop-haddocks
+version:         0.1.0
+synopsis:        Get access to Haddocks in @generics-sop@ style generic functions
+description:
+license:         BSD-3-Clause
+license-file:    LICENSE
+author:          Edsko de Vries
+maintainer:      edsko@well-typed.com
+category:        Generics
+build-type:      Simple
+extra-doc-files: CHANGELOG.md
+
+common lang
+  ghc-options:
+      -Wall
+      -Wprepositive-qualified-module
+      -Wredundant-constraints
+      -Wunused-packages
+  build-depends:
+      base >= 4.16
+  default-language:
+      GHC2021
+
+library
+  import:
+      lang
+  exposed-modules:
+      Generics.SOP.Haddocks
+      Generics.SOP.Haddocks.TH
+  hs-source-dirs:
+      src
+  build-depends:
+      sop-core
+
+test-suite test-sop-haddocks
+  import:
+     lang
+  type:
+     exitcode-stdio-1.0
+  hs-source-dirs:
+     test-sop-haddocks
+  main-is:
+     Main.hs
+  build-depends:
+     -- Internal dependencies
+     sop-haddocks
+  build-depends:
+     -- External dependencies
+   , tasty
+   , tasty-hunit
