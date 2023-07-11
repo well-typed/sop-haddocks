@@ -21,31 +21,44 @@ common lang
       base >= 4.16
   default-language:
       GHC2021
+  default-extensions:
+      UndecidableSuperClasses
+      DerivingStrategies
+      DeriveAnyClass
+      DataKinds
 
 library
   import:
       lang
+  other-extensions:
+      TemplateHaskell
   exposed-modules:
       Generics.SOP.Haddocks
       Generics.SOP.Haddocks.TH
   hs-source-dirs:
       src
   build-depends:
-      sop-core
+    , generics-sop
+    , template-haskell
 
 test-suite test-sop-haddocks
   import:
-     lang
+      lang
+  other-extensions:
+      TemplateHaskell
   type:
-     exitcode-stdio-1.0
+      exitcode-stdio-1.0
   hs-source-dirs:
-     test-sop-haddocks
+      test-sop-haddocks
   main-is:
-     Main.hs
+      Main.hs
+  other-modules:
+      Test.Sanity.TH
   build-depends:
-     -- Internal dependencies
-     sop-haddocks
+      -- Internal dependencies
+      sop-haddocks
   build-depends:
-     -- External dependencies
-   , tasty
-   , tasty-hunit
+      -- External dependencies
+    , generics-sop
+    , tasty
+    , tasty-hunit
