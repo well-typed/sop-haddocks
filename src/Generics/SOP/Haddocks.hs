@@ -2,7 +2,9 @@
 --
 -- Intended for qualified import.
 --
+-- > import Generics.SOP.Haddocks.TH
 -- > import Generics.SOP.Haddocks qualified as Haddocks
+-- > import Generics.SOP.Haddocks (HasHaddocks(..))
 module Generics.SOP.Haddocks (
     -- * Definition
     Haddocks(..)
@@ -20,8 +22,17 @@ import Generics.SOP
 
 type Doc = Maybe String
 
+-- | Haddocks associated with a datatype
 data Haddocks :: [[Type]] -> Type where
-  ADT :: Doc -> Haddocks xss
+  -- | Standard algebraic datatype
+  ADT ::
+       Doc
+    -> Haddocks xss
+
+  -- | Newtype
+  Newtype ::
+       Doc
+    -> Haddocks '[ '[x] ]
 
 deriving instance Show (Haddocks xss)
 

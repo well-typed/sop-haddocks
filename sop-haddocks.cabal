@@ -23,6 +23,7 @@ common lang
       GHC2021
   default-extensions:
       UndecidableSuperClasses
+      GADTs
       DerivingStrategies
       DeriveAnyClass
       DataKinds
@@ -31,15 +32,19 @@ library
   import:
       lang
   other-extensions:
+      CPP
       TemplateHaskell
   exposed-modules:
       Generics.SOP.Haddocks
       Generics.SOP.Haddocks.TH
+  other-modules:
+      Generics.SOP.Haddocks.Util
   hs-source-dirs:
       src
   build-depends:
-    , generics-sop
+    , th-abstraction
     , template-haskell
+    , generics-sop
 
 test-suite test-sop-haddocks
   import:
