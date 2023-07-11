@@ -44,6 +44,7 @@ library
   build-depends:
     , th-abstraction
     , template-haskell
+    , sop-core
     , generics-sop
 
 test-suite test-sop-haddocks
