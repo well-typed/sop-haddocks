@@ -1,18 +1,17 @@
 {-# LANGUAGE TemplateHaskell #-}
 
--- TODO: Temporary
-{-# OPTIONS_GHC -ddump-splices #-}
-
 module Test.Sanity.TH (tests) where
 
 import Test.Tasty.HUnit
 import Test.Tasty
 import GHC.Generics qualified as GHC
 import Generics.SOP qualified as SOP
-import Data.Proxy
+import Generics.SOP (Code)
+import Data.SOP
 
 import Generics.SOP.Haddocks.TH
-import Generics.SOP.Haddocks (HasHaddocks(..))
+import Generics.SOP.Haddocks qualified as Haddocks
+import Generics.SOP.Haddocks (HasHaddocks(..), Haddocks)
 
 {-------------------------------------------------------------------------------
   Example 1
@@ -99,34 +98,71 @@ deriveHasHaddocks ''Example6   -- Some haddocks missing
 
 tests :: TestTree
 tests = testGroup "Test.Sanity.TH" [
-      testCase "example1" test_example1
-    , testCase "example2" test_example2
-    , testCase "example3" test_example3
-    , testCase "example4" test_example4
-    , testCase "example5" test_example5
-    , testCase "example6" test_example6
+      testCase "example1" $ test (Proxy @Example1) expected1
+    , testCase "example2" $ test (Proxy @Example2) expected2
+    , testCase "example3" $ test (Proxy @Example3) expected3
+    , testCase "example4" $ test (Proxy @Example4) expected4
+    , testCase "example5" $ test (Proxy @Example5) expected5
+    , testCase "example5" $ test (Proxy @Example6) expected6
     ]
+  where
+    test :: HasHaddocks a => Proxy a -> Haddocks (Code a) -> Assertion
+    test p expected = assertEqual "" expected $ haddocks p
 
-test_example1 :: Assertion
-test_example1 =
-    print $ haddocks (Proxy @Example1)
+{-------------------------------------------------------------------------------
+  Expected haddocks
 
-test_example2 :: Assertion
-test_example2 =
-    print $ haddocks (Proxy @Example2)
+  The whitespace at the start of the haddocks is preserved; this looks a bit
+  weird here, but for some applications whitespace might be relevant, so we
+  leave any trimming up to client code.
+-------------------------------------------------------------------------------}
 
-test_example3 :: Assertion
-test_example3 =
-    print $ haddocks (Proxy @Example3)
+expected1 :: Haddocks (Code Example1)
+expected1 = Haddocks.ADT (Just " Example 1") $
+       Haddocks.Constructor (Just " Example 1, constructor 1")
+    :* Haddocks.Constructor (Just " Example 1, constructor 2")
+    :* Nil
 
-test_example4 :: Assertion
-test_example4 =
-    print $ haddocks (Proxy @Example4)
+expected2 :: Haddocks (Code Example2)
+expected2 = Haddocks.ADT (Just " Example 2") $
+       Haddocks.Constructor (Just " Example 2, only constructor")
+    :* Nil
 
-test_example5 :: Assertion
-test_example5 =
-    print $ haddocks (Proxy @Example5)
+expected3 :: Haddocks (Code Example3)
+expected3 = Haddocks.Newtype (Just " Example 3") $
+       Haddocks.Constructor (Just " Example 3, newtype constructor")
 
-test_example6 :: Assertion
-test_example6 =
-    print $ haddocks (Proxy @Example6)
+expected4 :: Haddocks (Code Example4)
+expected4 = Haddocks.Newtype (Just " Example 4") $
+     Haddocks.Record (Just " Example 4, newtype constructor") $
+          Haddocks.FieldInfo (Just " Example 4, newtype record field")
+       :* Nil
+
+expected5 :: Haddocks (Code Example5)
+expected5 = Haddocks.ADT (Just " Example 5") $
+       Haddocks.Constructor (Just " Example 5, constructor 1")
+    :* Haddocks.Record (Just " Example 5, constructor 2") (
+            Haddocks.FieldInfo (Just " Example 5, constructor 2, field 1")
+         :* Haddocks.FieldInfo (Just " Example 5, constructor 2, field 2")
+         :* Haddocks.FieldInfo (Just " Example 5, constructor 2, field 3")
+         :* Nil
+         )
+    :* Haddocks.Constructor (Just " Example 5, constructor 3")
+    :* Haddocks.Record (Just " Example 5, constructor 4") (
+            Haddocks.FieldInfo (Just " Example 5, constructor 4, field 1")
+         :* Haddocks.FieldInfo (Just " Example 5, constructor 4, field 2")
+         :* Nil
+         )
+    :* Nil
+
+expected6 :: Haddocks (Code Example6)
+expected6 = Haddocks.ADT (Just " Example 6") $
+       Haddocks.Constructor (Just " Example 5, constructor 1")
+    :* Haddocks.Record (Just " Example 5, constructor 2") (
+            Haddocks.FieldInfo (Just " Example 5, constructor 2, field 1")
+         :* Haddocks.FieldInfo Nothing
+         :* Haddocks.FieldInfo (Just " Example 5, constructor 2, field 3")
+         :* Nil
+         )
+    :* Haddocks.Constructor Nothing
+    :* Nil

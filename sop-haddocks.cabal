@@ -67,6 +67,7 @@ test-suite test-sop-haddocks
       sop-haddocks
   build-depends:
       -- External dependencies
-    , generics-sop
-    , tasty
     , tasty-hunit
+    , tasty
+    , sop-core
+    , generics-sop
