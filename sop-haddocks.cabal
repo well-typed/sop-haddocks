@@ -22,17 +22,16 @@ common lang
   default-language:
       GHC2021
   default-extensions:
-      UndecidableSuperClasses
-      GADTs
-      DerivingStrategies
-      DeriveAnyClass
       DataKinds
+      DeriveAnyClass
+      DerivingStrategies
+      GADTs
+      UndecidableSuperClasses
 
 library
   import:
       lang
   other-extensions:
-      CPP
       TemplateHaskell
   exposed-modules:
       Generics.SOP.Haddocks
@@ -40,15 +39,18 @@ library
   hs-source-dirs:
       src
   build-depends:
-    , th-abstraction
-    , template-haskell
-    , sop-core
     , generics-sop
+    , sop-core
+    , template-haskell
+    , th-abstraction
 
 test-suite test-sop-haddocks
   import:
       lang
+  default-extensions:
+      DefaultSignatures
   other-extensions:
+      OverloadedStrings
       TemplateHaskell
   ghc-options:
       -haddock
@@ -59,13 +61,17 @@ test-suite test-sop-haddocks
   main-is:
       Main.hs
   other-modules:
+      Test.Demo.Dhall
       Test.Sanity.TH
   build-depends:
       -- Internal dependencies
       sop-haddocks
   build-depends:
       -- External dependencies
-    , tasty-hunit
-    , tasty
-    , sop-core
+    , dhall
     , generics-sop
+    , mtl
+    , sop-core
+    , tasty
+    , tasty-hunit
+    , text

@@ -77,7 +77,7 @@ instance Show (Haddocks xss) where
 
 instance Show (Constructor xs) where
   showsPrec p (Constructor doc fields)
-    | Dict <- dictShowFields fields
+    | Dict <- dictShowArguments fields
     = showParen (p >= appPrec1) $
           showString "Constructor"
         . showSpace
@@ -96,8 +96,8 @@ dictShowConstructors =
     go Nil       = Nil
     go (_ :* xs) = Dict :* go xs
 
-dictShowFields :: NP f xs -> Dict (All (Compose Show Argument)) xs
-dictShowFields =
+dictShowArguments :: NP f xs -> Dict (All (Compose Show Argument)) xs
+dictShowArguments =
     all_NP . go
   where
     go :: NP f xs -> NP (Dict (Compose Show Argument)) xs
